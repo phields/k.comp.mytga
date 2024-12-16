@@ -43,7 +43,7 @@ import { GameAwards } from '../components/GameAwards.astro';
         position: absolute;
         font-size: 50px;
         z-index: 2;
-        top: -10px; /* 添加这一行，使emoji向上移动 */
+        top: -10px;
       }
       .tga-icon {
         position: absolute;
@@ -53,7 +53,7 @@ import { GameAwards } from '../components/GameAwards.astro';
         left: 0;
         z-index: 1;
         opacity: 1;
-        filter: brightness(0%); /* 添加这一行使SVG渲染为黑色 */
+        filter: brightness(0%); 
       }
       .divider {
         width: 2px;
@@ -202,16 +202,16 @@ import { GameAwards } from '../components/GameAwards.astro';
       inlineInputs.forEach(input => {
         input.setAttribute('minLength', '3');
         input.addEventListener('input', function() {
-          // 根据内容长度设置宽度，最小为3个字符宽度
+        
           const length = Math.max(3, this.value.length);
           this.style.width = length + 'em';
         });
       });
       
-      // 添加截图功能
+      // screenshot
       document.querySelector('.screenshot-btn').addEventListener('click', function() {
         html2canvas(document.querySelector("#capture")).then(canvas => {
-          // 创建下载链接
+          // download
           const link = document.createElement('a');
           link.download = 'my-tga-awards.png';
           link.href = canvas.toDataURL('image/png');

@@ -75,14 +75,13 @@
               img.style.height = "200px";
               img.style.width = "auto";
               
-              // 清除已有的图片
+              // remove existing image
               const existingImg = pasteArea.querySelector('img');
               if (existingImg) {
                 existingImg.remove();
               }
               
               pasteArea.appendChild(img);
-              // 添加此行：移除边框样式
               pasteArea.style.border = 'none';
             };
             
@@ -98,8 +97,6 @@
     });
   }
 
-  // 在 DOM 加载完成后初始化
   document.addEventListener('DOMContentLoaded', initPasteArea);
-  // 对于 Astro 视图转换，也监听 astro:page-load 事件
   document.addEventListener('astro:page-load', initPasteArea);
 </script>
