@@ -1,0 +1,105 @@
+---
+---
+
+<div
+  id="pasteArea"
+  class="paste-area"
+  tabindex="0"
+>
+  <div class="instructions">请在此区域粘贴图片 (Ctrl+V)</div>
+</div>
+
+<style>
+  .paste-area {
+    width: 100%;
+    height: 200px;
+    min-height: 200px;
+    max-height: 200px;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+  }
+
+  .paste-area:focus {
+    outline: none;
+    border-color: #66afe9;
+  }
+
+  .paste-area img {
+    max-width: 100%;
+    height: 200px;
+    width: auto;
+    object-fit: contain;
+  }
+
+  .instructions {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #aaa;
+    text-align: center;
+    pointer-events: none;
+  }
+</style>
+
+<script>
+  function initPasteArea() {
+    const pasteAreas = document.querySelectorAll('.paste-area');
+    
+    pasteAreas.forEach(pasteArea => {
+      const instructions = pasteArea.querySelector('.instructions');
+      
+      const handlePaste = (e: ClipboardEvent) => {
+        const items = e.clipboardData?.items;
+        if (!items) return;
+
+        for (const item of items) {
+          if (item.type.includes('image')) {
+            const file = item.getAsFile();
+            if (!file) continue;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+              if (instructions) {
+                instructions.remove();
+              }
+              
+              const img = document.createElement('img');
+              img.src = event.target?.result as string;
+              img.alt = "已粘贴的图片";
+              img.style.height = "200px";
+              img.style.width = "auto";
+              
+              // 清除已有的图片
+              const existingImg = pasteArea.querySelector('img');
+              if (existingImg) {
+                existingImg.remove();
+              }
+              
+              pasteArea.appendChild(img);
+              // 添加此行：移除边框样式
+              pasteArea.style.border = 'none';
+            };
+            
+            reader.readAsDataURL(file);
+            e.preventDefault();
+            break;
+          }
+        }
+      };
+
+      pasteArea.addEventListener('paste', handlePaste as EventListener);
+      pasteArea.addEventListener('click', () => pasteArea.focus());
+    });
+  }
+
+  // 在 DOM 加载完成后初始化
+  document.addEventListener('DOMContentLoaded', initPasteArea);
+  // 对于 Astro 视图转换，也监听 astro:page-load 事件
+  document.addEventListener('astro:page-load', initPasteArea);
+</script>

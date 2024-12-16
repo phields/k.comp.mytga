@@ -1,0 +1,171 @@
+---
+import PasteImage from '../components/PasteImage.astro';
+import { GameAwards } from '../components/GameAwards.astro';
+---
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My 2024 The "fuck you official TGA" Game Awards</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Arial', sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .main-wrapper {
+        width: 100%;
+        max-width: 700px;
+        margin: 0 auto;
+      }
+      .header-container {
+        display: flex;
+        align-items: center;
+        padding: 20px;
+        background-color: white;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      .emoji {
+        font-size: 50px;
+        margin-right: 10px;
+      }
+      .divider {
+        width: 2px;
+        height: 50px;
+        background-color: black;
+        margin: 0 10px;
+      }
+      .header-title {
+        font-size: 36px;
+        font-weight: bold;
+        color: black;
+      }
+      .header-subtitle {
+        font-size: 24px;
+        font-weight: normal;
+        color: gray;
+        font-style: italic;
+      }
+      .container {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        padding: 20px;
+        min-height: 100vh;
+        box-sizing: border-box;
+      }
+      .left-pane, .right-pane {
+        display: grid;
+        grid-template-rows: repeat(7, 1fr);
+        gap: 10px;
+      }
+      .left-pane {
+        border: none;
+        padding: 0;
+      }
+      .paste-container {
+        /* border: 1px solid #ccc; */
+        padding: 10px;
+        height: auto;
+        min-height: 120px;
+      }
+      .right-pane > div {
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+        min-height: 120px;
+        border: none;
+      }
+      .award-title {
+        font-size: 1.5rem;
+        font-weight: bold;
+      }
+      .award-input {
+        padding: 8px;
+        border: none;
+        border-bottom: 1px solid #ccc;
+        border-radius: 0;
+        font-size: 1rem;
+        width: 90%;
+        background: transparent;
+        transition: border-bottom-color 0.3s ease;
+      }
+      .award-input:focus {
+        outline: none;
+        border-bottom-color: #666;
+      }
+      .inline-input {
+        border: none;
+        min-width: 3em;
+        width: 3em;
+        font-size: 1.5rem;
+        font-weight: bold;
+        padding: 0;
+        margin: 0 4px;
+        background: transparent;
+        font-family: inherit;
+        color: inherit;
+      }
+      .inline-input:focus {
+        outline: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="main-wrapper">
+      <div class="header-container">
+        <div class="emoji">💩</div>
+        <div class="divider"></div>
+        <div>
+          <div class="header-title">我的 2024 年度游戏大奖</div>
+          <div class="header-subtitle">My 2024 The "fuck you official TGA" Game Awards</div>
+        </div>
+      </div>
+      <div class="container">
+        <div class="left-pane">
+          {GameAwards.map(() => (
+            <div class="paste-container">
+              <PasteImage />
+            </div>
+          ))}
+        </div>
+        <div class="right-pane">
+          {GameAwards.map((award) => (
+            <div>
+              <div class="award-title">
+                {award.isSpecial ? (
+                  <>
+                    最<input type="text" class="inline-input" />游戏
+                  </>
+                ) : (
+                  award.title
+                )}
+              </div>
+              <input type="text" class="award-input" placeholder="请输入感想" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+    <script>
+      const inlineInputs = document.querySelectorAll('.inline-input');
+      inlineInputs.forEach(input => {
+        input.setAttribute('minLength', '3');
+        input.addEventListener('input', function() {
+          // 根据内容长度设置宽度，最小为3个字符宽度
+          const length = Math.max(3, this.value.length);
+          this.style.width = length + 'em';
+        });
+      });
+    </script>
+  </body>
+</html>
