@@ -31,9 +31,27 @@ import { GameAwards } from '../components/GameAwards.astro';
         width: 100%;
         box-sizing: border-box;
       }
-      .emoji {
-        font-size: 50px;
+      .emoji-container {
+        position: relative;
+        width: 50px;
+        height: 50px;
         margin-right: 10px;
+      }
+      .emoji {
+        position: absolute;
+        font-size: 50px;
+        z-index: 2;
+        top: -10px; /* 添加这一行，使emoji向上移动 */
+      }
+      .tga-icon {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        z-index: 1;
+        opacity: 1;
+        filter: brightness(0%); /* 添加这一行使SVG渲染为黑色 */
       }
       .divider {
         width: 2px;
@@ -118,12 +136,32 @@ import { GameAwards } from '../components/GameAwards.astro';
       .inline-input:focus {
         outline: none;
       }
+      .screenshot-btn {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 10px 20px;
+        background-color: #333;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        z-index: 1000;
+        font-size: 16px;
+      }
+      .screenshot-btn:hover {
+        background-color: #555;
+      }
     </style>
   </head>
   <body>
-    <div class="main-wrapper">
+    <button class="screenshot-btn">截图</button>
+    <div class="main-wrapper" id="capture">
       <div class="header-container">
-        <div class="emoji">💩</div>
+        <div class="emoji-container">
+          <div class="emoji">💩</div>
+          <img src="/tga_icon_2024.svg" alt="TGA Icon" class="tga-icon" />
+        </div>
         <div class="divider"></div>
         <div>
           <div class="header-title">我的 2024 年度游戏大奖</div>
@@ -156,6 +194,7 @@ import { GameAwards } from '../components/GameAwards.astro';
         </div>
       </div>
     </div>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script>
       const inlineInputs = document.querySelectorAll('.inline-input');
       inlineInputs.forEach(input => {
@@ -164,6 +203,17 @@ import { GameAwards } from '../components/GameAwards.astro';
           // 根据内容长度设置宽度，最小为3个字符宽度
           const length = Math.max(3, this.value.length);
           this.style.width = length + 'em';
+        });
+      });
+      
+      // 添加截图功能
+      document.querySelector('.screenshot-btn').addEventListener('click', function() {
+        html2canvas(document.querySelector("#capture")).then(canvas => {
+          // 创建下载链接
+          const link = document.createElement('a');
+          link.download = 'my-tga-awards.png';
+          link.href = canvas.toDataURL('image/png');
+          link.click();
         });
       });
     </script>
