@@ -53,7 +53,9 @@ import { GameAwards } from '../components/GameAwards.astro';
         left: 0;
         z-index: 1;
         opacity: 1;
-        filter: brightness(0%); 
+        /* filter: brightness(0%); */
+        /* display: flex; */
+        transform: rotate(180deg);
       }
       .divider {
         width: 2px;
@@ -125,8 +127,7 @@ import { GameAwards } from '../components/GameAwards.astro';
       }
       .inline-input {
         border: none;
-        min-width: 3em;
-        width: 3em;
+        width: 2em;
         font-size: 1.5rem;
         font-weight: bold;
         padding: 0;
@@ -136,6 +137,7 @@ import { GameAwards } from '../components/GameAwards.astro';
         color: inherit;
       }
       .inline-input:focus {
+        
         outline: none;
       }
       .screenshot-btn {
@@ -161,7 +163,7 @@ import { GameAwards } from '../components/GameAwards.astro';
     <div class="main-wrapper" id="capture">
       <div class="header-container">
         <div class="emoji-container">
-          <div class="emoji">💩</div>
+          <!-- <div class="emoji">💩</div> -->
           <img src="/tga_icon_2024.svg" alt="TGA Icon" class="tga-icon" />
         </div>
         <div class="divider"></div>
@@ -201,7 +203,7 @@ import { GameAwards } from '../components/GameAwards.astro';
       const inlineInputs = document.querySelectorAll('.inline-input');
       inlineInputs.forEach(input => {
         input.setAttribute('minLength', '3');
-        input.addEventListener('input', function() {
+        input.addEventListener('input', function(this: HTMLInputElement) {
         
           const length = Math.max(3, this.value.length);
           this.style.width = length + 'em';
@@ -209,14 +211,35 @@ import { GameAwards } from '../components/GameAwards.astro';
       });
       
       // screenshot
-      document.querySelector('.screenshot-btn').addEventListener('click', function() {
-        html2canvas(document.querySelector("#capture")).then(canvas => {
-          // download
-          const link = document.createElement('a');
-          link.download = 'my-tga-awards.png';
-          link.href = canvas.toDataURL('image/png');
-          link.click();
+      document.querySelector('.screenshot-btn').addEventListener('click', async function() {
+        // 保存所有inline-input的值和元素引用
+        const inputs = Array.from(document.querySelectorAll('.inline-input'));
+        const inputStates = inputs.map(input => ({
+          element: input,
+          value: input.value,
+          parent: input.parentElement
+        }));
+
+        // 临时替换inline-input为纯文本
+        inputStates.forEach(({element, value, parent}) => {
+          const text = document.createTextNode(`${value}`);
+          parent.replaceChild(text, element);
         });
+
+        // 截图
+        const canvas = await html2canvas(document.querySelector("#capture"));
+        
+        // 恢复inline-input
+        inputStates.forEach(({element, parent}) => {
+          const text = parent.childNodes[1]; // 获取我们刚才创建的文本节点
+          parent.replaceChild(element, text);
+        });
+
+        // 下载
+        const link = document.createElement('a');
+        link.download = 'my-tga-awards.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
       });
     </script>
   </body>
