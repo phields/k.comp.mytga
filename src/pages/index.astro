@@ -2,6 +2,7 @@
 import PasteImage from '../components/PasteImage.astro';
 import { gameAwards } from '../components/GameAwards.astro';
 import SearchGame from '../components/SearchGame.tsx';
+import QRCodeComponent from '../components/QRCode';
 ---
 
 <!DOCTYPE html>
@@ -16,9 +17,6 @@ import SearchGame from '../components/SearchGame.tsx';
     <button class="screenshot-btn fixed top-5 right-5 px-5 py-2.5 bg-gray-800 text-white border-none rounded cursor-pointer z-50 text-base hover:bg-gray-600">
       下载截图
     </button>
-    <!-- <div class="w-1/4 p-4">
-      <SearchGame client:load></SearchGame>
-    </div> -->
     <div class="max-w-[700px] mx-auto" id="capture">
       <div class="flex items-center p-5 bg-white w-full box-border">
         <div class="relative w-[50px] h-[50px] mr-2.5">
@@ -34,8 +32,11 @@ import SearchGame from '../components/SearchGame.tsx';
       <div class="w-full grid grid-cols-2 gap-5 p-5 min-h-screen box-border">
         <div class="grid grid-rows-[repeat(7,1fr)] gap-2.5">
           {gameAwards.map(() => (
-            <div class="p-2.5 h-auto min-h-[120px]">
+            <div class="p-2.5 h-auto min-h-[120px] relative">
               <PasteImage />
+              <div class="search-game-container hidden absolute top-full left-0 w-full z-50 bg-white mt-2">
+                <SearchGame client:load />
+              </div>
             </div>
           ))}
         </div>
@@ -51,10 +52,17 @@ import SearchGame from '../components/SearchGame.tsx';
                   award.title
                 )}
               </div>
-              <input type="text" class="p-2 border-none border-b border-gray-300 rounded-none text-base w-[90%] bg-transparent transition-all duration-300 ease-in-out focus:outline-none focus:border-gray-600" placeholder="请输入感想" />
+              <textarea 
+                class="p-2 border-none border-b border-gray-300 rounded-none text-base w-[90%] bg-transparent transition-all duration-300 ease-in-out focus:outline-none focus:border-gray-600 resize-none overflow-hidden"
+                placeholder="请输入感想"
+                rows="1"
+              ></textarea>
             </div>
           ))}
         </div>
+      </div>
+      <div id="qrcode-container" class="hidden">
+        <QRCodeComponent client:load />
       </div>
     </div>
 
@@ -121,7 +129,8 @@ import SearchGame from '../components/SearchGame.tsx';
       if (screenshotBtn) {
         screenshotBtn.addEventListener('click', async function() {
           const captureElement = document.querySelector("#capture");
-          if (!captureElement) return;
+          const qrcodeContainer = document.querySelector("#qrcode-container");
+          if (!captureElement || !qrcodeContainer) return;
 
           // 保存所有auto-resize-input的值和元素引用
           const inputs = Array.from(document.querySelectorAll('.auto-resize-input'));
@@ -132,6 +141,9 @@ import SearchGame from '../components/SearchGame.tsx';
           })).filter(state => state.parent !== null);
 
           try {
+            // 显示二维码
+            qrcodeContainer.classList.remove('hidden');
+            
             // 临时替换input为纯文本
             inputStates.forEach(({element, value, parent}) => {
               const text = document.createTextNode(value || '');
@@ -140,8 +152,15 @@ import SearchGame from '../components/SearchGame.tsx';
               }
             });
 
+            // 等待一小段时间确保二维码已经渲染
+            await new Promise(resolve => setTimeout(resolve, 100));
+
             // 截图
-            const canvas = await html2canvas(captureElement);
+            const canvas = await html2canvas(captureElement, { 
+              allowTaint: false, 
+              useCORS: true,
+              scale: 2 // 提高输出质量
+            });
             
             // 下载
             const link = document.createElement('a');
@@ -158,9 +177,62 @@ import SearchGame from '../components/SearchGame.tsx';
                 parent.replaceChild(element, currentText);
               }
             });
+            // 隐藏二维码
+            qrcodeContainer.classList.add('hidden');
           }
         });
       }
+
+      // 处理PasteArea的选中状态
+      function initSearchGameContainers() {
+        const containers = document.querySelectorAll('.p-2\\.5.h-auto');
+        
+        containers.forEach(container => {
+          const pasteArea = container.querySelector('#pasteArea');
+          const searchContainer = container.querySelector('.search-game-container');
+          
+          if (pasteArea && searchContainer) {
+            // 移除旧的事件监听器
+            pasteArea.removeEventListener('pastearea-select', () => {});
+            pasteArea.removeEventListener('pastearea-deselect', () => {});
+            
+            // 添加新的事件监听器
+            pasteArea.addEventListener('pastearea-select', () => {
+              // 隐藏其他搜索容器
+              document.querySelectorAll('.search-game-container').forEach(el => {
+                if (el !== searchContainer) {
+                  el.classList.add('hidden');
+                }
+              });
+              // 显示当前搜索容器
+              searchContainer.classList.remove('hidden');
+              console.log('显示搜索容器'); // 调试日志
+            });
+            
+            pasteArea.addEventListener('pastearea-deselect', () => {
+              searchContainer.classList.add('hidden');
+              console.log('隐藏搜索容器'); // 调试日志
+            });
+          }
+        });
+      }
+
+      // 确保在页面加载和视图更新时都初始化
+      document.addEventListener('DOMContentLoaded', initSearchGameContainers);
+      document.addEventListener('astro:page-load', initSearchGameContainers);
+
+      // 自动调整textarea高度的函数
+      function autoResizeTextarea(textarea: HTMLTextAreaElement) {
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
+      }
+
+      // 为所有textarea添加自动调整高度功能
+      document.querySelectorAll('textarea').forEach(textarea => {
+        textarea.addEventListener('input', () => autoResizeTextarea(textarea));
+        // 初始化时调整一次
+        autoResizeTextarea(textarea);
+      });
     </script>
   </body>
 </html>

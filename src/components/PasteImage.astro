@@ -13,9 +13,29 @@
 
 <script>
   function initPasteArea() {
-    const pasteAreas = document.querySelectorAll('[id="pasteArea"]');
+    // 移除旧的事件监听器
+    document.removeEventListener('click', handleGlobalClick);
     
-    pasteAreas.forEach(pasteArea => {
+    function handleGlobalClick(e: MouseEvent) {
+      const target = e.target as HTMLElement;
+      // 检查点击目标是否在SearchGame组件内
+      if (target.closest('.search-game-container')) {
+        return; // 如果是SearchGame内的点击，不处理
+      }
+      // 检查是否点击了PasteArea之外的区域
+      if (!target.closest('#pasteArea')) {
+        document.querySelectorAll('#pasteArea').forEach(area => {
+          area.dispatchEvent(new CustomEvent('pastearea-deselect'));
+        });
+      }
+    }
+
+    // 添加全局点击事件
+    document.addEventListener('click', handleGlobalClick);
+
+    let activeArea: Element | null = null;  // 添加一个变量来跟踪当前激活的区域
+
+    document.querySelectorAll('#pasteArea').forEach(pasteArea => {
       const instructions = pasteArea.querySelector('div');
 
       function handleImageURL(url) {
@@ -94,10 +114,68 @@
       pasteArea.addEventListener('dragover', handleDragOver);
       pasteArea.addEventListener('dragleave', handleDragLeave);
       pasteArea.addEventListener('drop', handleDrop);
-      pasteArea.addEventListener('click', () => pasteArea.focus());
+
+      // 重写点击处理函数
+      function handlePasteAreaClick(e: MouseEvent) {
+        e.stopPropagation();
+        
+        // 更新当前激活的区域
+        activeArea = pasteArea;
+        
+        // 取消其他区域的选中状态
+        document.querySelectorAll('#pasteArea').forEach(area => {
+          if (area !== pasteArea) {
+            area.dispatchEvent(new CustomEvent('pastearea-deselect'));
+          }
+        });
+
+        // 触发选中事件
+        pasteArea.dispatchEvent(new CustomEvent('pastearea-select'));
+      }
+
+      // 移除旧的事件监听器
+      pasteArea.removeEventListener('click', handlePasteAreaClick);
+      
+      // 添加新的事件监听器
+      pasteArea.addEventListener('click', handlePasteAreaClick);
     });
+
+    // 将游戏图片选择事件监听器移到外部
+    function handleGameImageSelected(e: CustomEvent) {
+      if (!activeArea) return;
+      
+      const url = e.detail.url;
+      if (url) {
+        const instructions = activeArea.querySelector('div');
+        if (instructions) {
+          instructions.remove();
+        }
+        
+        const img = document.createElement('img');
+        img.src = url;
+        img.alt = "已添加的图片";
+        img.className = "h-[200px] w-auto object-contain";
+        
+        const existingImg = activeArea.querySelector('img');
+        if (existingImg) {
+          existingImg.remove();
+        }
+        
+        activeArea.appendChild(img);
+        activeArea.classList.remove('border-2', 'border-dashed', 'border-gray-300');
+        activeArea.dispatchEvent(new CustomEvent('pastearea-deselect'));
+        activeArea = null;  // 重置激活区域
+      }
+    }
+
+    // 移除旧的事件监听器
+    document.removeEventListener('game-image-selected', handleGameImageSelected as EventListener);
+    
+    // 添加新的事件监听器
+    document.addEventListener('game-image-selected', handleGameImageSelected as EventListener);
   }
 
+  // 确保在页面加载和视图更新时都初始化
   document.addEventListener('DOMContentLoaded', initPasteArea);
   document.addEventListener('astro:page-load', initPasteArea);
 </script>
