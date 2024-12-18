@@ -1,8 +1,7 @@
 ---
 import PasteImage from '../components/PasteImage.astro';
-import { GameAwards } from '../components/GameAwards.astro';
-
-
+import { gameAwards } from '../components/GameAwards.astro';
+import SearchGame from '../components/SearchGame.tsx';
 ---
 
 <!DOCTYPE html>
@@ -11,236 +10,157 @@ import { GameAwards } from '../components/GameAwards.astro';
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>My 2024 The "fuck you official TGA" Game Awards</title>
-    <style>
-      body {
-        margin: 0;
-        padding: 0;
-        font-family: 'Arial', sans-serif;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-      }
-      .main-wrapper {
-        width: 100%;
-        max-width: 700px;
-        margin: 0 auto;
-      }
-      .header-container {
-        display: flex;
-        align-items: center;
-        padding: 20px;
-        background-color: white;
-        width: 100%;
-        box-sizing: border-box;
-      }
-      .emoji-container {
-        position: relative;
-        width: 50px;
-        height: 50px;
-        margin-right: 10px;
-      }
-      .emoji {
-        position: absolute;
-        font-size: 50px;
-        z-index: 2;
-        top: -10px;
-      }
-      .tga-icon {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        top: 0;
-        left: 0;
-        z-index: 1;
-        opacity: 1;
-        /* filter: brightness(0%); */
-        /* display: flex; */
-        transform: rotate(180deg);
-      }
-      .divider {
-        width: 2px;
-        height: 50px;
-        background-color: black;
-        margin: 0 10px;
-      }
-      .header-title {
-        font-size: 36px;
-        font-weight: bold;
-        color: black;
-      }
-      .header-subtitle {
-        font-size: 24px;
-        font-weight: normal;
-        color: gray;
-        font-style: italic;
-      }
-      .container {
-        width: 100%;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-        padding: 20px;
-        min-height: 100vh;
-        box-sizing: border-box;
-      }
-      .left-pane, .right-pane {
-        display: grid;
-        grid-template-rows: repeat(7, 1fr);
-        gap: 10px;
-      }
-      .left-pane {
-        border: none;
-        padding: 0;
-      }
-      .paste-container {
-        /* border: 1px solid #ccc; */
-        padding: 10px;
-        height: auto;
-        min-height: 120px;
-      }
-      .right-pane > div {
-        padding: 10px;
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 5px;
-        min-height: 120px;
-        border: none;
-      }
-      .award-title {
-        font-size: 1.5rem;
-        font-weight: bold;
-      }
-      .award-input {
-        padding: 8px;
-        border: none;
-        border-bottom: 1px solid #ccc;
-        border-radius: 0;
-        font-size: 1rem;
-        width: 90%;
-        background: transparent;
-        transition: border-bottom-color 0.3s ease;
-      }
-      .award-input:focus {
-        outline: none;
-        border-bottom-color: #666;
-      }
-      .inline-input {
-        border: none;
-        width: 2em;
-        font-size: 1.5rem;
-        font-weight: bold;
-        padding: 0;
-        margin: 0 4px;
-        background: transparent;
-        font-family: inherit;
-        color: inherit;
-      }
-      .inline-input:focus {
-        
-        outline: none;
-      }
-      .screenshot-btn {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 10px 20px;
-        background-color: #333;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        z-index: 1000;
-        font-size: 16px;
-      }
-      .screenshot-btn:hover {
-        background-color: #555;
-      }
-    </style>
   </head>
-  <body>
-    <button class="screenshot-btn">下载截图</button>
-    <div class="main-wrapper" id="capture">
-      <div class="header-container">
-        <div class="emoji-container">
-          <!-- <div class="emoji">💩</div> -->
-          <img src="/tga_icon_2024.svg" alt="TGA Icon" class="tga-icon" />
+  
+  <body class="m-0 p-0 font-sans flex flex-row items-start">
+    <button class="screenshot-btn fixed top-5 right-5 px-5 py-2.5 bg-gray-800 text-white border-none rounded cursor-pointer z-50 text-base hover:bg-gray-600">
+      下载截图
+    </button>
+    <!-- <div class="w-1/4 p-4">
+      <SearchGame client:load></SearchGame>
+    </div> -->
+    <div class="max-w-[700px] mx-auto" id="capture">
+      <div class="flex items-center p-5 bg-white w-full box-border">
+        <div class="relative w-[50px] h-[50px] mr-2.5">
+          <img src="/tga_icon_2024.svg" alt="TGA Icon" class="absolute w-full h-full top-0 left-0 z-10 opacity-100 rotate-180" />
         </div>
-        <div class="divider"></div>
+        <div class="w-0.5 h-[50px] bg-black mx-2.5"></div>
         <div>
-          <div class="header-title">我的 2024 年度游戏大奖</div>
-          <div class="header-subtitle">My 2024 The "fuck you official TGA" Game Awards</div>
+          <div class="text-base md:text-4xl font-bold text-black">我的 2024 年度游戏大奖</div>
+          <div class="text-sm md:text-2xl font-normal text-gray-500 italic">My 2024 The "fuck you official TGA" Game Awards</div>
         </div>
       </div>
-      <div class="container">
-        <div class="left-pane">
-          {GameAwards.map(() => (
-            <div class="paste-container">
+
+      <div class="w-full grid grid-cols-2 gap-5 p-5 min-h-screen box-border">
+        <div class="grid grid-rows-[repeat(7,1fr)] gap-2.5">
+          {gameAwards.map(() => (
+            <div class="p-2.5 h-auto min-h-[120px]">
               <PasteImage />
             </div>
           ))}
         </div>
-        <div class="right-pane">
-          {GameAwards.map((award) => (
-            <div>
-              <div class="award-title">
+        <div class="grid grid-rows-[repeat(7,1fr)] gap-2.5">
+          {gameAwards.map((award) => (
+            <div class="p-2.5 flex flex-col items-start gap-1.5 min-h-[120px] border-none">
+              <div class="text-base md:text-2xl font-bold">
                 {award.isSpecial ? (
                   <>
-                    最<input type="text" class="inline-input" />游戏
+                    最<input type="text" class="auto-resize-input border-none text-2xl font-bold p-0 m-0 mx-1 bg-transparent font-inherit min-w-[2em]" />游戏
                   </>
                 ) : (
                   award.title
                 )}
               </div>
-              <input type="text" class="award-input" placeholder="请输入感想" />
+              <input type="text" class="p-2 border-none border-b border-gray-300 rounded-none text-base w-[90%] bg-transparent transition-all duration-300 ease-in-out focus:outline-none focus:border-gray-600" placeholder="请输入感想" />
             </div>
           ))}
         </div>
       </div>
     </div>
+
+
+
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script>
+      // 添加类型声明
+      declare const html2canvas: any;
+
+      // 自动调整输入框宽度的函数
+      function adjustInputWidth(input: HTMLInputElement) {
+        // 创建一个隐藏的span来测量文本宽度
+        const span = document.createElement('span');
+        span.style.visibility = 'hidden';
+        span.style.position = 'absolute';
+        span.style.whiteSpace = 'pre';
+        // 复制输入框的字体样式
+        span.style.fontSize = getComputedStyle(input).fontSize;
+        span.style.fontFamily = getComputedStyle(input).fontFamily;
+        span.style.fontWeight = getComputedStyle(input).fontWeight;
+        document.body.appendChild(span);
+
+        // 设置span的文本内容
+        const value = input.value || input.placeholder || '';
+        span.textContent = value;
+
+        // 计算宽度（添加一些padding以防止文字太贴近边缘）
+        const width = span.offsetWidth + 4;
+        
+        // 设置最小宽度
+        input.style.width = Math.max(32, width) + 'px';
+        
+        // 清理DOM
+        document.body.removeChild(span);
+      }
+
+      // 为所有auto-resize-input类的输入框添加事件监听
+      const autoResizeInputs = document.querySelectorAll('.auto-resize-input');
+      autoResizeInputs.forEach(input => {
+        if (input instanceof HTMLInputElement) {
+          // 初始化时调整一次
+          adjustInputWidth(input);
+          
+          // 输入时调整
+          input.addEventListener('input', () => adjustInputWidth(input));
+          
+          // 窗口大小改变时调整
+          window.addEventListener('resize', () => adjustInputWidth(input));
+        }
+      });
+
       const inlineInputs = document.querySelectorAll('.inline-input');
       inlineInputs.forEach(input => {
         input.setAttribute('minLength', '3');
         input.addEventListener('input', function(this: HTMLInputElement) {
-        
           const length = Math.max(3, this.value.length);
           this.style.width = length + 'em';
         });
       });
       
       // screenshot
-      document.querySelector('.screenshot-btn').addEventListener('click', async function() {
-        // 保存所有inline-input的值和元素引用
-        const inputs = Array.from(document.querySelectorAll('.inline-input'));
-        const inputStates = inputs.map(input => ({
-          element: input,
-          value: input.value,
-          parent: input.parentElement
-        }));
+      const screenshotBtn = document.querySelector('.screenshot-btn');
+      if (screenshotBtn) {
+        screenshotBtn.addEventListener('click', async function() {
+          const captureElement = document.querySelector("#capture");
+          if (!captureElement) return;
 
-        // 临时替换inline-input为纯文本
-        inputStates.forEach(({element, value, parent}) => {
-          const text = document.createTextNode(`${value}`);
-          parent.replaceChild(text, element);
+          // 保存所有auto-resize-input的值和元素引用
+          const inputs = Array.from(document.querySelectorAll('.auto-resize-input'));
+          const inputStates = inputs.map(input => ({
+            element: input,
+            value: (input as HTMLInputElement).value,
+            parent: input.parentElement
+          })).filter(state => state.parent !== null);
+
+          try {
+            // 临时替换input为纯文本
+            inputStates.forEach(({element, value, parent}) => {
+              const text = document.createTextNode(value || '');
+              if (parent) {
+                parent.replaceChild(text, element);
+              }
+            });
+
+            // 截图
+            const canvas = await html2canvas(captureElement);
+            
+            // 下载
+            const link = document.createElement('a');
+            link.download = 'my-tga-awards.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+          } catch (error) {
+            console.error('Screenshot failed:', error);
+          } finally {
+            // 恢复input
+            inputStates.forEach(({element, parent}) => {
+              const currentText = parent?.childNodes[1];
+              if (parent && currentText) {
+                parent.replaceChild(element, currentText);
+              }
+            });
+          }
         });
-
-        // 截图
-        const canvas = await html2canvas(document.querySelector("#capture"));
-        
-        // 恢复inline-input
-        inputStates.forEach(({element, parent}) => {
-          const text = parent.childNodes[1]; // 获取我们刚才创建的文本节点
-          parent.replaceChild(element, text);
-        });
-
-        // 下载
-        const link = document.createElement('a');
-        link.download = 'my-tga-awards.png';
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-      });
+      }
     </script>
   </body>
 </html>

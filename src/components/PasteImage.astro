@@ -3,57 +3,48 @@
 
 <div
   id="pasteArea"
-  class="paste-area"
+  class="w-full h-[200px] min-h-[200px] max-h-[200px] border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer relative focus:outline-none focus:border-blue-400 transition-colors duration-200"
   tabindex="0"
 >
-  <div class="instructions">请在此区域粘贴图片 (Ctrl+V)</div>
+  <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-400 text-center pointer-events-none">
+    请在此区域粘贴或拖放图片
+  </div>
 </div>
-
-<style>
-  .paste-area {
-    width: 100%;
-    height: 200px;
-    min-height: 200px;
-    max-height: 200px;
-    border: 2px dashed #ccc;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    position: relative;
-  }
-
-  .paste-area:focus {
-    outline: none;
-    border-color: #66afe9;
-  }
-
-  .paste-area img {
-    max-width: 100%;
-    height: 200px;
-    width: auto;
-    object-fit: contain;
-  }
-
-  .instructions {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: #aaa;
-    text-align: center;
-    pointer-events: none;
-  }
-</style>
 
 <script>
   function initPasteArea() {
-    const pasteAreas = document.querySelectorAll('.paste-area');
+    const pasteAreas = document.querySelectorAll('[id="pasteArea"]');
     
     pasteAreas.forEach(pasteArea => {
-      const instructions = pasteArea.querySelector('.instructions');
-      
+      const instructions = pasteArea.querySelector('div');
+
+      function handleImageURL(url) {
+        if (instructions) {
+          instructions.remove();
+        }
+        
+        const img = document.createElement('img');
+        img.src = url;
+        img.alt = "已添加的图片";
+        img.className = "h-[200px] w-auto object-contain";
+        
+        const existingImg = pasteArea.querySelector('img');
+        if (existingImg) {
+          existingImg.remove();
+        }
+        
+        pasteArea.appendChild(img);
+        pasteArea.classList.remove('border-2', 'border-dashed', 'border-gray-300');
+      }
+
+      function handleImage(file: File) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          handleImageURL(event.target?.result as string);
+        };
+        reader.readAsDataURL(file);
+      }
+
       const handlePaste = (e: ClipboardEvent) => {
         const items = e.clipboardData?.items;
         if (!items) return;
@@ -61,38 +52,48 @@
         for (const item of items) {
           if (item.type.includes('image')) {
             const file = item.getAsFile();
-            if (!file) continue;
-
-            const reader = new FileReader();
-            reader.onload = (event) => {
-              if (instructions) {
-                instructions.remove();
-              }
-              
-              const img = document.createElement('img');
-              img.src = event.target?.result as string;
-              img.alt = "已粘贴的图片";
-              img.style.height = "200px";
-              img.style.width = "auto";
-              
-              // remove existing image
-              const existingImg = pasteArea.querySelector('img');
-              if (existingImg) {
-                existingImg.remove();
-              }
-              
-              pasteArea.appendChild(img);
-              pasteArea.style.border = 'none';
-            };
-            
-            reader.readAsDataURL(file);
-            e.preventDefault();
-            break;
+            if (file) {
+              handleImage(file);
+              e.preventDefault();
+              break;
+            }
           }
         }
       };
 
+      const handleDragOver = (e: DragEvent) => {
+        e.preventDefault();
+        pasteArea.classList.add('border-blue-400', 'bg-blue-50');
+      };
+
+      const handleDragLeave = (e: DragEvent) => {
+        e.preventDefault();
+        pasteArea.classList.remove('border-blue-400', 'bg-blue-50');
+      };
+
+      const handleDrop = (e: DragEvent) => {
+        e.preventDefault();
+        pasteArea.classList.remove('border-blue-400', 'bg-blue-50');
+        
+        const files = e.dataTransfer?.files;
+        const url = e.dataTransfer?.getData('text/plain');
+        
+        if (files && files.length > 0) {
+          for (const file of files) {
+            if (file.type.includes('image')) {
+              handleImage(file);
+              break;
+            }
+          }
+        } else if (url) {
+          handleImageURL(url);
+        }
+      };
+
       pasteArea.addEventListener('paste', handlePaste as EventListener);
+      pasteArea.addEventListener('dragover', handleDragOver);
+      pasteArea.addEventListener('dragleave', handleDragLeave);
+      pasteArea.addEventListener('drop', handleDrop);
       pasteArea.addEventListener('click', () => pasteArea.focus());
     });
   }
